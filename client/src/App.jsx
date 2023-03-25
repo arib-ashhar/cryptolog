@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import { Buffer } from 'buffer';
 import React, { Component } from 'react';
 import {create as IPFSHTTPClient} from 'ipfs-http-client';
+import {encryptAES} from './AES';
 
 //const ipfsClient = require('ipfs-http-client');
 
@@ -22,7 +23,6 @@ const client = IPFSHTTPClient({
   }
 })
 
-
 class App extends Component {
   constructor(props) {
     super(props)
@@ -37,6 +37,8 @@ class App extends Component {
     //this.onSubmit = this.onSubmit.bind(this);
   }
 
+  
+
 
   captureFile = (event) => {
     event.preventDefault()
@@ -47,11 +49,17 @@ class App extends Component {
       //console.log('before: ', Buffer(reader.result))
       this.setState({ buffer: Buffer(reader.result) }, () => {
         console.log('state: ', this.state.buffer)
+        const EDATA = encryptAES(this.state.buffer);
+        console.log("heere: ", EDATA)
       });
+      //console.log('After state: ', this.state.buffer)
+      
+      
       //console.log('after: ', Buffer(reader.result))
     }
   }
 
+  
 
   //API ENDPOINT: "https://ipfs.io/ipfs/ipfsHash"
   onSubmit = async (event) => {
