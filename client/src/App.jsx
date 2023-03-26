@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import { Buffer } from 'buffer';
 import React, { Component } from 'react';
 import {create as IPFSHTTPClient} from 'ipfs-http-client';
-import {encryptAES} from './AES';
+import {encryptAES, getbackIPFS} from './AES';
 
 //const ipfsClient = require('ipfs-http-client');
 
@@ -31,14 +31,14 @@ class App extends Component {
       ipfsHash: '',
       web3: null,
       buffer: null,
-      account: null
+      account: null,
+      encryptedWA: null
     }
     this.captureFile = this.captureFile.bind(this);
     //this.onSubmit = this.onSubmit.bind(this);
   }
 
   
-
 
   captureFile = (event) => {
     event.preventDefault()
@@ -49,8 +49,10 @@ class App extends Component {
       //console.log('before: ', Buffer(reader.result))
       this.setState({ buffer: Buffer(reader.result) }, () => {
         console.log('state: ', this.state.buffer)
-        const EDATA = encryptAES(this.state.buffer);
-        console.log("heere: ", EDATA)
+        // const EDATA = encryptAES(this.state.buffer);
+        // this.setState({encryptedWA: EDATA}, () => {
+        //   console.log("STATE WA: ", this.state.encryptedWA);
+        // })
       });
       //console.log('After state: ', this.state.buffer)
       
@@ -68,8 +70,9 @@ class App extends Component {
     try{
       const added = await client.add(this.state.buffer);
       console.log("IPFS: ", added.path)
-      this.setState({ipfsHash: added.path}, () => {
+      this.setState({ipfsHash: added.path}, async () => {
         console.log("IPFS STATE: ", this.state.ipfsHash)
+        //await getbackIPFS(this.state.ipfsHash);
       })
     } catch (error) {
       console.log(error)
@@ -85,20 +88,16 @@ class App extends Component {
           <div className="container">
             <Intro />
             <hr />
-            <Setup />
-            <hr />
-            <Demo />
-            <hr />
-            <Footer />
           </div>
           <div className="pure-u-1-1">
-            <h1>Your Image</h1>
-            <p>This image is stored on IPFS & The Ethereum Blockchain!</p>
-            <h2>Upload Image</h2>
+            <h1>Your File</h1>
+            <p>This File is stored on IPFS & The Ethereum Blockchain!</p>
+            <h2>Upload File</h2>
             <form onSubmit={this.onSubmit}>
               <input type='file' onChange={this.captureFile} />
               <input type='submit' />
             </form>
+            <hr />
           </div>
         </div>
       </EthProvider>
