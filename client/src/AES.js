@@ -45,7 +45,7 @@ export function encryptAES(input) {
     // var fileEnc = new Blob([encrypted]);                                    // Create blob from string
     // console.log("ENCRYPTED BLOB: ", fileEnc);
 
-    // var a = document.createElement("a");
+    // var a = document.createElement("a"); 
     // var url = window.URL.createObjectURL(fileEnc);
     // var filename = file.name + ".enc";
     // a.href = url;
