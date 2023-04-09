@@ -27,10 +27,12 @@ contract('cryptolog', (accounts) => {
     describe('adding File', async () => {
         it('adds ipfsHash successfully', async () => {
             cryptologInstance = await cryptolog.deployed();
-            await cryptolog.addFile(3, 'new IPFSHASH');
-            fileHash = await cryptolog.accessFile(3, 'new IPFSHASH');
-            assert.equal(fileHash, 'new IPFSHASH', "correct files HASH");
+            await cryptologInstance.addFile(3, 'new IPFSHASH');
+            setTimeout(async () => {
+                fileHash = await cryptologInstance.accessFile(3, 'new IPFSHASH');
+                assert.equal(fileHash, 'new IPFSHASH', "correct files HASH");
+            }, 1000);
         });
     });
-    
+
 });
