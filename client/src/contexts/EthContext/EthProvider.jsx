@@ -56,8 +56,7 @@ const EthProvider = ({ children }) => {
 
 
   //API ENDPOINT: "https://ipfs.io/ipfs/ipfsHash"
-  const onUpload = async (event) => {
-    event.preventDefault()
+  const onUpload = async () => { 
     console.log('submitting the form')
     try {
       const added = await client.add(buffer);
