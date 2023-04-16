@@ -1,12 +1,14 @@
 import React, { useContext, useEffect } from 'react'
 import { EthContext } from '../contexts/EthContext'; 
 import ImageUpload from './ImageUpload/ImageUpload';
+import Auth from './AUTH/Auth';
+import Navbar from './Navbar/Navbar';
 
 
 
 const Home = () => {
     const context = useContext(EthContext);
-    const { init } = context;
+    const { init , tab , tabs , getIpfsHashes } = context;
 
     useEffect(() => {
         init();
@@ -27,7 +29,10 @@ const Home = () => {
                 </form>
                 <hr />
             </div> */}
-            <ImageUpload />
+            <Navbar/>
+            {tab == tabs.UPLOAD_FILE && <ImageUpload />}
+            {(tab == tabs.LOGIN || tab == tabs.CREATE_ACCOUNT)  && <Auth />}
+            <button onClick={()=>getIpfsHashes()} >Get</button>
         </div>
     );
 }

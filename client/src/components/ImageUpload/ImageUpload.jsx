@@ -7,7 +7,7 @@ import Loader from '../Loader/Loader';
 const ImageUpload = () => {
 
     const context = useContext(EthContext);
-    const { setbuffer, ipfsHash, onUpload , addedFile } = context;
+    const { setbuffer, ipfsHash, onUpload, addedFile } = context;
     const [img, setImg] = useState();
     const [isLoading, setIsLoading] = useState(false)
     const captureFile = (event) => {
@@ -64,8 +64,11 @@ const ImageUpload = () => {
                     <div className="progress-bar"> </div>
                 </div>
                 {!ipfsHash && <button type="button" onClick={onUploadimg} disabled={img ? false : true} className="upload-button"> Upload </button>}
-                {ipfsHash && <div>
-                    Your image has been successfuly uploaded on {ipfsHash}
+                {ipfsHash && <div className='img-info' >
+                    <span>Your image has been successfuly uploaded on</span>
+                    <span>
+                        {ipfsHash}
+                    </span>
                 </div>}
             </div>
         </div>
