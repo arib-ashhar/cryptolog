@@ -20,3 +20,7 @@
 nav{
     z-index: 9999;
 }
+
+.navbar-collapse{
+    justify-content: space-between;
+}

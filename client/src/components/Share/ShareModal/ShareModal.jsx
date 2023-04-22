@@ -1,5 +1,6 @@
 import React from 'react'
 import Share from '../Share'
+import  './ShareModal.css'
 
 const ShareModal = ({selectedBlock}) => {
     return (

@@ -1,8 +1,8 @@
 import React from 'react'
 import "./Loader.css"
-const Loader = ({ value }) => {
+const Loader = ({ background=true , value }) => {
     return (
-        <div className="loaders" >
+        <div className={`loaders ${background && "scrim"} `} >
             {/*  Loader 1 */}
             {value === 1 && <div className="loader loader1">
                 <span />

@@ -9,11 +9,13 @@
     align-items: center;
     flex-wrap: wrap;
     counter-reset: list;
-    background-color: var(--scrim-color);
     z-index: 99;
     animation: scaleFull 1s, opacityUp 1s forwards;
 }
 
+.scrim{
+    background-color: var(--scrim-color);
+}
 .loaders .loader {
     position: relative;
     margin-left: 100px;

@@ -14,7 +14,7 @@ const ImageUpload = () => {
 
     const captureFile = (event) => {
         const file = event.target.files[0];
-        if (file) {
+        if (file ) {
             setImg({ src: URL.createObjectURL(file), name: file.name, file: file });
         }
 
@@ -62,15 +62,13 @@ const ImageUpload = () => {
                             <div>Filename : {img.file.name}</div>
                             <div>Upload Time(ms) : {Date.now()} </div>
                             <div>Type : {img.file.type}</div>
+                            <div>Size : ({(img.file.size/ (1024 * 1024)).toFixed(2)} MB) </div>
                         </pre>
                     </div>
                 </div>}
                 {!ipfsHash && <button type="button" onClick={onUploadimg} disabled={img ? false : true} className="upload-button"> Upload </button>}
                 {ipfsHash && <div className='img-info' >
-                    <span>Your image has been successfuly uploaded on</span>
-                    <span>
-                        {ipfsHash}
-                    </span>
+                    <span>File has been successfuly uploaded</span>
                 </div>}
             </div>
         </div>

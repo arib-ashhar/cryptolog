@@ -4,7 +4,7 @@ import { EthContext } from '../../contexts/EthContext';
 const Navbar = () => {
 
     const context = useContext(EthContext);
-    const { tabs, tab, setTab, getIpfsHashes, user, getSharedBlocks } = context;
+    const { tabs, tab, setTab, getIpfsHashes, user } = context;
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light flex-nowrap p-0">
@@ -28,7 +28,6 @@ const Navbar = () => {
                         </li>
                         <li className="nav-item">
                             <a className={`nav-link ${tab === tabs.SHARED_FILES && 'active'}`} href="#" onClick={async () => {
-                                await getSharedBlocks()
                                 setTab(tabs.SHARED_FILES)
                             }}>Shared Files</a>
                         </li>
@@ -42,7 +41,7 @@ const Navbar = () => {
                         </li>
                     </ul>
                     <div class="d-flex align-items-center">
-                        {user?.id}
+                        Userid : {user?.id}
                     </div>
                 </div>
             </div>

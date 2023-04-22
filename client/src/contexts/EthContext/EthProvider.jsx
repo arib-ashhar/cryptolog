@@ -4,6 +4,7 @@ import EthContext from "./EthContext";
 import cryptolog from '../../contracts/cryptolog.json'
 import { create as IPFSHTTPClient } from 'ipfs-http-client';
 import { contract_token, ipfsClient } from "../../environment";
+import { toast } from 'react-toastify';
 
 const client = IPFSHTTPClient(ipfsClient)
 const JWT_TOKEN = 'jwtToken';
@@ -135,8 +136,8 @@ const EthProvider = ({ children }) => {
         let block = await contract.methods.dataOwners(i).call({ from: account });
         console.log(block);
         if (block.dataOwner_id === _dataOwnerId) {
-          const base64String = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
-          block.base64String = base64String;
+          const imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
+          block.imgsrc = imgsrc;
           userBlocks.push(block)
         }
       }
@@ -147,7 +148,6 @@ const EthProvider = ({ children }) => {
   async function getSharedBlocks() {
     if (!allSharedUserBlocks) {
       const _dataOwnerId = (await getUser()).id;
-      console.log(_dataOwnerId)
       let filesCount = await contract.methods.filesCount().call({ from: account });
       console.log(filesCount);
       let userBlocks = [];
@@ -156,8 +156,15 @@ const EthProvider = ({ children }) => {
         const sharedTo = JSON.parse(block.sharableTo);
         console.log(sharedTo);
         if (sharedTo.includes(_dataOwnerId)) {
-          const base64String = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
-          block.base64String = base64String;
+
+          let imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
+          try {
+            imgsrc = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
+          } catch (error) {
+            console.log(error);
+          }
+          
+          block.imgsrc = imgsrc;
           userBlocks.push(block)
         }
       }
@@ -173,6 +180,27 @@ const EthProvider = ({ children }) => {
       console.log(block.filesCount, JSON.stringify(sharedTo));
       sharedTo = JSON.stringify(sharedTo);
       await contract.methods.shareFile(block.filesCount, sharedTo).send({ from: account });
+      toast.success('Successfully shared with ' + userid, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } else {
+      toast.warn('Already shared with ' + userid, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   }
 
