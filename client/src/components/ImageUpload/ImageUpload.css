@@ -11,21 +11,14 @@
 }
 
 .upload-files-container {
-	background-color: #3a5cd10a;
-	width: 420px;
-	padding: 30px 60px;
 	border-radius: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	border: 1px solid var(--theme);
 	transition: all 0.35s;
 }
 
-.upload-files-container:hover {
-	box-shadow: rgba(0, 0, 0, 0.24) 0px 10px 20px, rgba(0, 0, 0, 0.28) 0px 6px 6px;
-}
 
 .drag-file-area {
 	border: 2px dashed var(--theme);

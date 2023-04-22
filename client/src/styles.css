@@ -20,3 +20,7 @@ html {
 .text-white{
   color: var(--white) !important;
 }
+.home{
+  height: 100vh;
+  overflow: auto;
+}

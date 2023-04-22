@@ -3,9 +3,7 @@ import Web3 from "web3";
 import EthContext from "./EthContext";
 import cryptolog from '../../contracts/cryptolog.json'
 import { create as IPFSHTTPClient } from 'ipfs-http-client';
-import { ipfsClient } from "../../environment";
-// import { generateContract } from "client-node";
-// import contract  from "truffle-contract";
+import { contract_token, ipfsClient } from "../../environment";
 
 const client = IPFSHTTPClient(ipfsClient)
 const JWT_TOKEN = 'jwtToken';
@@ -15,18 +13,23 @@ const EMAIL = 'EMAIL';
 const EthProvider = ({ children }) => {
 
   const [ipfsHash, setipfsHash] = useState();
+  const [allUserBlocks, setAllUserBlocks] = useState();
   const [web3, setweb3] = useState();
   const [buffer, setbuffer] = useState();
   const [account, setaccount] = useState();
   const [account_id, setaccount_id] = useState();
   const [contract, setcontract] = useState();
-  const [cryptologs, setCryptologs] = useState();
   const [encryptedWA, setencryptedWA] = useState();
+  const [currentBlock, setCurrentBlock] = useState();
+  const [allSharedUserBlocks, setAllSharedUserBlocks] = useState();
+  const [user, setUser] = useState();
 
   const tabs = {
     UPLOAD_FILE: "UPLOAD_FILE",
+    UPLOADED_FILES: "UPLOADED_FILES",
     LOGIN: "LOGIN",
-    CREATE_ACCOUNT: "CREATE_ACCOUNT"
+    CREATE_ACCOUNT: "CREATE_ACCOUNT",
+    SHARED_FILES: "SHARED_FILES",
   }
   const [tab, setTab] = useState(tabs.LOGIN);
 
@@ -34,6 +37,7 @@ const EthProvider = ({ children }) => {
     configureLogin();
     await loadWeb3()
     await loadBlockchainData();
+    await getUser();
   }
 
   function configureLogin() {
@@ -67,29 +71,18 @@ const EthProvider = ({ children }) => {
     const networkData = cryptolog.networks[networkId]
     console.log(networkData)
     if (networkData) {
-      let contract = new web3.eth.Contract(cryptolog.abi, localStorage.getItem(CONTRACT_TOKEN) || networkData.address)
+      let contract = new web3.eth.Contract(cryptolog.abi, contract_token || localStorage.getItem(CONTRACT_TOKEN) || networkData.address)
       contract.setProvider(window.web3);
-      // const crContract = TruffleContract(cryptolog)
-      // crContract.setProvider(web3.currentProvider)
-      // const myCr = await contract.deployed();
-      // setCryptologs(await contract.deployed());
-      // const files = await myCr.dataOwners();
-      // generateContract()
 
-      if (!localStorage.getItem(CONTRACT_TOKEN)) {
-        const bytecode = cryptolog.bytecode;
-        contract = await contract.deploy({
-          data: bytecode,
-          arguments: [] // pass constructor arguments here
-        }).send({ from: accounts[0] })
-        // console.log("here", contract)
-        localStorage.setItem(CONTRACT_TOKEN, contract.options.address);
-      }
+      // if (!localStorage.getItem(CONTRACT_TOKEN)) {
+      //   const bytecode = cryptolog.bytecode;
+      //   contract = await contract.deploy({
+      //     data: bytecode,
+      //     arguments: [] // pass constructor arguments here
+      //   }).send({ from: accounts[0] })
+      //   localStorage.setItem(CONTRACT_TOKEN, contract.options.address);
+      // }
       setcontract(contract)
-
-
-      // Hydrate the smart contract with values from the blockchain
-
     } else {
       window.alert('Smart contract not deployed to detected network.')
     }
@@ -97,30 +90,90 @@ const EthProvider = ({ children }) => {
 
 
   //API ENDPOINT: "https://ipfs.io/ipfs/ipfsHash"
-  const onUpload = async () => {
+  const onUpload = async (description) => {
     console.log('submitting the form')
     try {
-      const acountAddress = (await getUser()).id;
-      console.log(acountAddress);
+      const _dataOwnerId = (await getUser()).id;
+      console.log(_dataOwnerId, description);
       const added = await client.add(buffer);
       console.log("IPFS: ", added.path)
       setipfsHash(added.path);
-      console.log("IPFS STATE: ", ipfsHash)
-      const addedFile = await contract.methods.addFile(acountAddress, added.path).send({ from: account })
+      const addedFile = await contract.methods.addFileWithOwner(_dataOwnerId, account, added.path, description).send({ from: account })
       console.log(addedFile)
-
     } catch (error) {
       console.log(error)
     }
 
   }
 
+  async function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/png');
+        resolve(dataURL);
+      };
+      img.onerror = (error) => reject(error);
+      img.src = url;
+    });
+  }
+
   async function getIpfsHashes() {
-    const accountAddress = (await getUser()).id;
-    console.log(accountAddress)
-    const result = await contract.methods.dataOwnerCount().call({ from: account });
-    const result1 = await contract.methods.dataOwners(accountAddress).call({ from: account });
-    console.log(result, result1, "here");
+    if (!allUserBlocks) {
+      const _dataOwnerId = (await getUser()).id;
+      console.log(_dataOwnerId)
+      let filesCount = await contract.methods.filesCount().call({ from: account });
+      console.log(filesCount);
+      let userBlocks = [];
+      for (let i = 1; i <= filesCount; i++) {
+        let block = await contract.methods.dataOwners(i).call({ from: account });
+        console.log(block);
+        if (block.dataOwner_id === _dataOwnerId) {
+          const base64String = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
+          block.base64String = base64String;
+          userBlocks.push(block)
+        }
+      }
+      setAllUserBlocks(userBlocks);
+    }
+  }
+
+  async function getSharedBlocks() {
+    if (!allSharedUserBlocks) {
+      const _dataOwnerId = (await getUser()).id;
+      console.log(_dataOwnerId)
+      let filesCount = await contract.methods.filesCount().call({ from: account });
+      console.log(filesCount);
+      let userBlocks = [];
+      for (let i = 1; i <= filesCount; i++) {
+        let block = await contract.methods.dataOwners(i).call({ from: account });
+        const sharedTo = JSON.parse(block.sharableTo);
+        console.log(sharedTo);
+        if (sharedTo.includes(_dataOwnerId)) {
+          const base64String = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
+          block.base64String = base64String;
+          userBlocks.push(block)
+        }
+      }
+      setAllSharedUserBlocks(userBlocks);
+    }
+  }
+
+  async function shareBlockData(userid, block) {
+    let sharedTo = JSON.parse(block.sharableTo || '[]');
+    if (!sharedTo.includes(userid)) {
+      console.log(sharedTo);
+      sharedTo.push(userid);
+      console.log(block.filesCount, JSON.stringify(sharedTo));
+      sharedTo = JSON.stringify(sharedTo);
+      await contract.methods.shareFile(block.filesCount, sharedTo).send({ from: account });
+    }
   }
 
   async function login(email, password) {
@@ -157,7 +210,6 @@ const EthProvider = ({ children }) => {
         throw new Error('Network response was not ok');
       }
       const { authtoken, id } = await response.json();
-      (await contract.methods.addOwner(id).send({ from: account }));
 
       localStorage.setItem(JWT_TOKEN, authtoken);
 
@@ -168,6 +220,10 @@ const EthProvider = ({ children }) => {
 
   async function getUser() {
     const token = localStorage.getItem(JWT_TOKEN);
+
+    if (user) {
+      return user;
+    }
 
     try {
       const response = await fetch('http://localhost:5000/api/auth/getuser', {
@@ -182,12 +238,12 @@ const EthProvider = ({ children }) => {
       }
       const data = await response.json();
       // handle response data
+      setUser(data);
       return data;
     } catch (error) {
       console.error('There was a problem with the getUser request:', error);
     }
   }
-
 
 
 
@@ -203,7 +259,14 @@ const EthProvider = ({ children }) => {
       contract, setcontract,
       encryptedWA, setencryptedWA, onUpload,
       tabs, tab, setTab, getIpfsHashes,
-      login, configureLogin, createUser, getUser,
+      login, configureLogin, createUser,
+      user, getUser,
+      allUserBlocks,
+      setAllUserBlocks,
+      shareBlockData,
+      currentBlock, setCurrentBlock,
+      allSharedUserBlocks, setAllSharedUserBlocks,
+      getSharedBlocks,
       init
     }}>
       {children}

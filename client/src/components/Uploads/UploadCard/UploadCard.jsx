@@ -1,20 +1,37 @@
-import React from 'react'
+import React, { useContext, useRef } from 'react'
+import "./UploadCard.css"
+import { EthContext } from '../../../contexts/EthContext';
+import parse from 'html-react-parser';
 
-const UploadCard = () => {
+const UploadCard = ({ block, shareable }) => {
+
+  const context = useContext(EthContext);
+  const { setCurrentBlock } = context;
+  const shareBtn = useRef();
+  const description = useRef();
+  const showShareableModal = () => {
+    if(!shareable){
+      return;
+    }
+    setCurrentBlock(block);
+    shareBtn.current.click();
+  }
+
+  
   return (
-    <div className='col-md-3 p-2' >
+    <div className='p-2' >
       <div class="card ">
-        <img src="https://mdbcdn.b-cdn.net/img/new/standard/nature/184.webp" class="card-img-top" alt="Fissure in Sandstone" />
-        <div class="card-body">
-          <h5 class="card-title">FILE_NAME</h5>
-          <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          <a href="#!" class="btn btn-primary">Open</a>
+        <img src={block.base64String} class="card-img-top" alt="Preview" />
+        <div class="card-body d-flex justify-content-between flex-column">
+          <pre ref={description} class="card-title">{parse(block.description)}</pre>
+          <div className="d-flex mt-3">
+            {shareable && <a href="#!" class="btn btn-primary ms-1" onClick={() => showShareableModal()} >Share</a>}
+          </div>
+          {shareable && <button type="button" ref={shareBtn} className="btn btn-primary d-none" data-mdb-toggle="modal" data-mdb-target="#shareModal">
+          </button>}
         </div>
       </div>
     </div>
-
-
-
   )
 }
 

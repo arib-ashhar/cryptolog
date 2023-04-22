@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useRef, useState } from 'react'
 import "./ImageUpload.css"
 import { EthContext } from '../../contexts/EthContext';
 import { Buffer } from 'buffer';
@@ -7,28 +7,27 @@ import Loader from '../Loader/Loader';
 const ImageUpload = () => {
 
     const context = useContext(EthContext);
-    const { setbuffer, ipfsHash, onUpload, addedFile } = context;
+    const { setbuffer, ipfsHash, onUpload } = context;
     const [img, setImg] = useState();
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false);
+    const description = useRef();
+
     const captureFile = (event) => {
         const file = event.target.files[0];
         if (file) {
-            setImg({ src: URL.createObjectURL(file), name: file.name });
+            setImg({ src: URL.createObjectURL(file), name: file.name, file: file });
         }
 
         const reader = new window.FileReader()
         reader.readAsArrayBuffer(file)
-        reader.onloadend = () => {
-            //console.log('before: ', Buffer(reader.result))
-            setbuffer(Buffer(reader.result));
-            //console.log('After state: ', state.buffer)
-            //console.log('after: ', Buffer(reader.result))
+        reader.onloadend = () => { 
+            setbuffer(Buffer(reader.result)); 
         }
     }
 
     const onUploadimg = async () => {
         setIsLoading(true);
-        await onUpload();
+        await onUpload(description.current.innerHTML);
         setIsLoading(false);
 
     }
@@ -57,12 +56,15 @@ const ImageUpload = () => {
                         </span></div>}
                     {isLoading && <Loader value={3} />}
                 </div>
-                <span className="cannot-upload-message"> <span className="material-icons-outlined">error</span> Please select a file first <span className="material-icons-outlined cancel-alert-button">cancel</span> </span>
-                <div className="file-block">
-                    <div className="file-info"> <span className="material-icons-outlined file-icon">description</span> <span className="file-name"> </span> | <span className="file-size"></span> </div>
-                    <span className="material-icons remove-file-icon">delete</span>
-                    <div className="progress-bar"> </div>
-                </div>
+                {img?.file && <div className="">
+                    <div className="file-info">
+                        <pre ref={description}>
+                            <div>Filename : {img.file.name}</div>
+                            <div>Upload Time(ms) : {Date.now()} </div>
+                            <div>Type : {img.file.type}</div>
+                        </pre>
+                    </div>
+                </div>}
                 {!ipfsHash && <button type="button" onClick={onUploadimg} disabled={img ? false : true} className="upload-button"> Upload </button>}
                 {ipfsHash && <div className='img-info' >
                     <span>Your image has been successfuly uploaded on</span>

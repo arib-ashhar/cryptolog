@@ -12,3 +12,5 @@ export const ipfsClient = {
         authorization: auth,
     }
 }
+
+export const contract_token = '0x78ec2913475e50Ed34a0051d5d2EDF1cbF5387C4'

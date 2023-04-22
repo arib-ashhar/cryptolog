@@ -1,14 +1,18 @@
 import React, { useContext, useEffect } from 'react'
-import { EthContext } from '../contexts/EthContext'; 
+import { EthContext } from '../contexts/EthContext';
 import ImageUpload from './ImageUpload/ImageUpload';
 import Auth from './AUTH/Auth';
 import Navbar from './Navbar/Navbar';
+import Uploads from './Uploads/Uploads';
+import { ToastContainer } from 'react-toastify';
+import ShareModal from './Share/ShareModal/ShareModal';
+import SharedUploads from './Uploads/SharedUploads';
 
 
 
 const Home = () => {
     const context = useContext(EthContext);
-    const { init , tab , tabs , getIpfsHashes } = context;
+    const { init, tab, tabs, currentBlock } = context;
 
     useEffect(() => {
         init();
@@ -16,23 +20,28 @@ const Home = () => {
     }, [])
 
     return (
-        <div> 
-            {/* <div className="pure-u-1-1">
-                <p>Ethereum Account: {account}</p>
-                <h1>Your File</h1>
-                <p>This File is stored on IPFS & The Ethereum Blockchain!</p>
-                <img alt='preview' src={`https://ipfs.io/ipfs/${ipfsHash}`} />
-                <h2>Upload File</h2>
-                <form onSubmit={onUpload}>
-                    <input type='file'  />
-                    <input type='submit' />
-                </form>
-                <hr />
-            </div> */}
-            <Navbar/>
+        <div className='home'>
+            <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            {/* Same as */}
+            <ToastContainer />
+            <Navbar />
             {tab == tabs.UPLOAD_FILE && <ImageUpload />}
-            {(tab == tabs.LOGIN || tab == tabs.CREATE_ACCOUNT)  && <Auth />}
-            <button onClick={()=>getIpfsHashes()} >Get</button>
+            {(tab == tabs.LOGIN || tab == tabs.CREATE_ACCOUNT) && <Auth />}
+            {(tab == tabs.LOGIN || tab == tabs.UPLOADED_FILES) && <Uploads />}
+            {(tab == tabs.LOGIN || tab == tabs.SHARED_FILES) && <SharedUploads />}
+            <ShareModal selectedBlock={currentBlock} />
+
         </div>
     );
 }

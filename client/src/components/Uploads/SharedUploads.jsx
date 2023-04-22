@@ -2,21 +2,21 @@ import React, { useContext } from 'react'
 import UploadCard from './UploadCard/UploadCard'
 import { EthContext } from '../../contexts/EthContext';
 
-const Uploads = () => {
+const SharedUploads = () => {
   
   const context = useContext(EthContext);
-  const { allUserBlocks } = context;
+  const { allSharedUserBlocks } = context;
  
 
   return (
     <div className="container py-5">
       <div className='d-flex flex-wrap'>
-        {allUserBlocks?.map((e , i)=>{
-          return <UploadCard shareable={true} block={e} key={i} />
-        }).reverse()}
+        {allSharedUserBlocks?.map((e , i)=>{
+          return <UploadCard block={e} key={i} />
+        })}
       </div>
     </div>
   )
 }
 
-export default Uploads
+export default SharedUploads
