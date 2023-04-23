@@ -3,17 +3,19 @@ pragma solidity >=0.4.22 <0.9.0;
 
 contract cryptolog {
     struct DataOwner {
-        uint filesCount;
+        // uint filesCount;
+        string blockHash;
         string dataOwner_id;
         string accountAddress;
         string ipfsHash;
         string description;
-        string sharableTo;
+        uint isShared;
         uint timestamp;
     }
 
-    mapping(uint => DataOwner) public dataOwners;
-    uint public filesCount;
+    mapping(string => DataOwner) public dataOwners;
+    // uint public filesCount;
+    mapping(string => uint) public dataOwnersFilesCount;
 
     constructor() public {
         //addOwner("1384D2C26c8830312A32B6b106cA585D512a5A5d");
@@ -29,23 +31,104 @@ contract cryptolog {
     //     dataOwners[_dataOwner_acc_Address] = _dataOwner;
     // }
 
-    function addFileWithOwner(string memory _dataOwnerId , string memory _accountAddress , string memory _ipfsReturn , string memory _description) public {
-        filesCount++;
-        
-        dataOwners[filesCount] = DataOwner(
-            filesCount,
+    function addFileWithOwner(
+        // string memory _blockAddress,
+        string memory _dataOwnerId,
+        string memory _accountAddress,
+        string memory _ipfsReturn,
+        string memory _description
+    ) public {
+        // filesCount++;
+        dataOwnersFilesCount[_dataOwnerId]++;
+        string memory _blockAddress = concatenate(
+            _dataOwnerId,
+            dataOwnersFilesCount[_dataOwnerId]
+        );
+
+        dataOwners[_blockAddress] = DataOwner(
+            // filesCount,
+            _blockAddress,
             _dataOwnerId,
             _accountAddress,
             _ipfsReturn,
             _description,
-            "[]",
+            0,
             block.timestamp
         );
     }
 
-    function shareFile(uint _fileNumber , string memory _sharableTo) public {
-        DataOwner storage _dataOwner = dataOwners[_fileNumber];
-        _dataOwner.sharableTo = _sharableTo;
-        dataOwners[_fileNumber] = _dataOwner;
+    function shareFile(
+        string memory _fromblockAddress,
+        string memory _dataOwnerId
+    ) public {
+        dataOwnersFilesCount[_dataOwnerId]++;
+        string memory _toblockAddress = concatenate(
+            _dataOwnerId,
+            dataOwnersFilesCount[_dataOwnerId]
+        );
+
+        DataOwner storage _dataOwner = dataOwners[_fromblockAddress];
+        // _dataOwner.blockHash = _toblockAddress;
+        // _dataOwner.dataOwner_id = _dataOwnerId;
+        // _dataOwner.isShared = 1;
+        // _dataOwner.timestamp = block.timestamp;
+        dataOwners[_toblockAddress] = _dataOwner;
+        dataOwners[_toblockAddress] = DataOwner(
+            _toblockAddress,
+            _dataOwnerId,
+            _dataOwner.accountAddress,
+            _dataOwner.ipfsHash,
+           _dataOwner.description,
+            1,
+            block.timestamp
+        );
+    }
+
+    function uintToString(uint number) internal pure returns (string memory) {
+        if (number == 0) {
+            return "0";
+        }
+        uint temp = number;
+        uint digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (number != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint(number % 10)));
+            number /= 10;
+        }
+        return string(buffer);
+    }
+
+    function concatenate(
+        string memory text,
+        uint number
+    ) public pure returns (string memory) {
+        string memory numberAsString = uintToString(number);
+
+        bytes memory textBytes = bytes(text);
+        bytes memory colonBytes = bytes(":");
+        bytes memory numberBytes = bytes(numberAsString);
+
+        string memory result = new string(
+            textBytes.length + colonBytes.length + numberBytes.length
+        );
+        bytes memory resultBytes = bytes(result);
+
+        uint index = 0;
+        for (uint i = 0; i < textBytes.length; i++) {
+            resultBytes[index++] = textBytes[i];
+        }
+        for (uint i = 0; i < colonBytes.length; i++) {
+            resultBytes[index++] = colonBytes[i];
+        }
+        for (uint i = 0; i < numberBytes.length; i++) {
+            resultBytes[index++] = numberBytes[i];
+        }
+
+        return string(resultBytes);
     }
 }

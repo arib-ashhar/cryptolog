@@ -101,6 +101,8 @@ const EthProvider = ({ children }) => {
       setipfsHash(added.path);
       const addedFile = await contract.methods.addFileWithOwner(_dataOwnerId, account, added.path, description).send({ from: account })
       console.log(addedFile)
+      setAllUserBlocks();
+      setAllSharedUserBlocks();
     } catch (error) {
       console.log(error)
     }
@@ -129,13 +131,14 @@ const EthProvider = ({ children }) => {
     if (!allUserBlocks) {
       const _dataOwnerId = (await getUser()).id;
       console.log(_dataOwnerId)
-      let filesCount = await contract.methods.filesCount().call({ from: account });
+      let filesCount = await contract.methods.dataOwnersFilesCount(_dataOwnerId).call({ from: account });
       console.log(filesCount);
       let userBlocks = [];
       for (let i = 1; i <= filesCount; i++) {
-        let block = await contract.methods.dataOwners(i).call({ from: account });
+        let block = await contract.methods.dataOwners(`${_dataOwnerId}:${i}`).call({ from: account });
+        const isShared = parseInt(block.isShared);
         console.log(block);
-        if (block.dataOwner_id === _dataOwnerId) {
+        if (!isShared) {
           const imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
           block.imgsrc = imgsrc;
           userBlocks.push(block)
@@ -148,22 +151,20 @@ const EthProvider = ({ children }) => {
   async function getSharedBlocks() {
     if (!allSharedUserBlocks) {
       const _dataOwnerId = (await getUser()).id;
-      let filesCount = await contract.methods.filesCount().call({ from: account });
+      let filesCount = await contract.methods.dataOwnersFilesCount(_dataOwnerId).call({ from: account });
       console.log(filesCount);
       let userBlocks = [];
       for (let i = 1; i <= filesCount; i++) {
-        let block = await contract.methods.dataOwners(i).call({ from: account });
-        const sharedTo = JSON.parse(block.sharableTo);
-        console.log(sharedTo);
-        if (sharedTo.includes(_dataOwnerId)) {
-
+        let block = await contract.methods.dataOwners(`${_dataOwnerId}:${i}`).call({ from: account });
+        const isShared = parseInt(block.isShared);
+        console.log(block);
+        if (isShared) {
           let imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
           try {
             imgsrc = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
           } catch (error) {
             console.log(error);
           }
-          
           block.imgsrc = imgsrc;
           userBlocks.push(block)
         }
@@ -173,35 +174,18 @@ const EthProvider = ({ children }) => {
   }
 
   async function shareBlockData(userid, block) {
-    let sharedTo = JSON.parse(block.sharableTo || '[]');
-    if (!sharedTo.includes(userid)) {
-      console.log(sharedTo);
-      sharedTo.push(userid);
-      console.log(block.filesCount, JSON.stringify(sharedTo));
-      sharedTo = JSON.stringify(sharedTo);
-      await contract.methods.shareFile(block.filesCount, sharedTo).send({ from: account });
-      toast.success('Successfully shared with ' + userid, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    } else {
-      toast.warn('Already shared with ' + userid, {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-    }
+    await contract.methods.shareFile(block.blockHash, userid).send({ from: account });
+    toast.success('Successfully shared with ' + userid, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+    });
+
   }
 
   async function login(email, password) {
