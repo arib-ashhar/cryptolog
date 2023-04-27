@@ -130,8 +130,4 @@ function createRandomKey(size_in_Bytes) {
     return result;
 }
 
-<<<<<<< HEAD
 export { encryptFile, encryptText, decryptFile, decryptText };
-=======
-export { encryptFile, encryptText, decryptFile, decryptText };
->>>>>>> aea0b296cfc1427309666ccff3f1fbe639e11dc4
