@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 const client = IPFSHTTPClient(ipfsClient)
 const JWT_TOKEN = 'jwtToken';
 const CONTRACT_TOKEN = 'CONTRACT_TOKEN';
-const EMAIL = 'EMAIL';
+const EMAIL = 'EMAIL';  
 
 const EthProvider = ({ children }) => {
 
@@ -72,6 +72,7 @@ const EthProvider = ({ children }) => {
     const networkData = cryptolog.networks[networkId]
     console.log(networkData)
     if (networkData) {
+      //contract_token = networkData.address
       let contract = new web3.eth.Contract(cryptolog.abi, contract_token || localStorage.getItem(CONTRACT_TOKEN) || networkData.address)
       contract.setProvider(window.web3);
 
