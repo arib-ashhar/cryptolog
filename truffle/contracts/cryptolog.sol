@@ -8,12 +8,18 @@ contract cryptolog {
         string dataOwner_id;
         string accountAddress;
         string ipfsHash;
+        string ipfsHashKey;
         string description;
         uint isShared;
         uint timestamp;
     }
 
+    struct PublicSharedFiles {
+        string dataOwnerBlockHash;
+    }
+
     mapping(string => DataOwner) public dataOwners;
+    mapping(string => PublicSharedFiles) public publicSharedFiles;
     // uint public filesCount;
     mapping(string => uint) public dataOwnersFilesCount;
 
@@ -21,21 +27,12 @@ contract cryptolog {
         //addOwner("1384D2C26c8830312A32B6b106cA585D512a5A5d");
     }
 
-    // function addFile(
-    //     string memory _dataOwner_acc_Address,
-    //     string memory _ipfsReturn
-    // ) public {
-    //     DataOwner storage _dataOwner = dataOwners[_dataOwner_acc_Address];
-    //     _dataOwner.filesCount = _dataOwner.filesCount + 1;
-    //     _dataOwner.ipfsHashes = _ipfsReturn;
-    //     dataOwners[_dataOwner_acc_Address] = _dataOwner;
-    // }
-
     function addFileWithOwner(
         // string memory _blockAddress,
         string memory _dataOwnerId,
         string memory _accountAddress,
         string memory _ipfsReturn,
+        string memory _ipfsKey,
         string memory _description
     ) public {
         // filesCount++;
@@ -46,11 +43,11 @@ contract cryptolog {
         );
 
         dataOwners[_blockAddress] = DataOwner(
-            // filesCount,
             _blockAddress,
             _dataOwnerId,
             _accountAddress,
             _ipfsReturn,
+            _ipfsKey,
             _description,
             0,
             block.timestamp
@@ -68,20 +65,29 @@ contract cryptolog {
         );
 
         DataOwner storage _dataOwner = dataOwners[_fromblockAddress];
-        // _dataOwner.blockHash = _toblockAddress;
-        // _dataOwner.dataOwner_id = _dataOwnerId;
-        // _dataOwner.isShared = 1;
-        // _dataOwner.timestamp = block.timestamp;
         dataOwners[_toblockAddress] = _dataOwner;
         dataOwners[_toblockAddress] = DataOwner(
             _toblockAddress,
             _dataOwnerId,
             _dataOwner.accountAddress,
             _dataOwner.ipfsHash,
-           _dataOwner.description,
+            _dataOwner.ipfsHashKey,
+            _dataOwner.description,
             1,
             block.timestamp
         );
+    }
+
+    function makeFilePublic(
+        string memory _key,
+        string memory _dataOwnerBlockHash
+    ) public {
+        require(
+            bytes(publicSharedFiles[_key].dataOwnerBlockHash).length == 0,
+            "Key already exists"
+        );
+        publicSharedFiles[_key] = PublicSharedFiles(_dataOwnerBlockHash);
+        dataOwners[_dataOwnerBlockHash].isShared = 2;
     }
 
     function uintToString(uint number) internal pure returns (string memory) {

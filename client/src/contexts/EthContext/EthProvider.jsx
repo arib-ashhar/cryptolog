@@ -5,11 +5,11 @@ import cryptolog from '../../contracts/cryptolog.json'
 import { create as IPFSHTTPClient } from 'ipfs-http-client';
 import { contract_token, ipfsClient } from "../../environment";
 import { toast } from 'react-toastify';
+import { encryptFile, encryptText, decryptFile, decryptText } from '../../AES.js';
 
 const client = IPFSHTTPClient(ipfsClient)
 const JWT_TOKEN = 'jwtToken';
 const CONTRACT_TOKEN = 'CONTRACT_TOKEN';
-const EMAIL = 'EMAIL';
 
 const EthProvider = ({ children }) => {
 
@@ -31,6 +31,7 @@ const EthProvider = ({ children }) => {
     LOGIN: "LOGIN",
     CREATE_ACCOUNT: "CREATE_ACCOUNT",
     SHARED_FILES: "SHARED_FILES",
+    ACCESS_FILE: "ACCESS_FILE"
   }
   const [tab, setTab] = useState(tabs.LOGIN);
 
@@ -96,10 +97,12 @@ const EthProvider = ({ children }) => {
     try {
       const _dataOwnerId = (await getUser()).id;
       console.log(_dataOwnerId, description);
-      const added = await client.add(buffer);
+      const encyBuffer = encryptFile(buffer);
+      const added = await client.add(encyBuffer.encrypted);
       console.log("IPFS: ", added.path)
+      const encyIpfs = encryptText(added.path, encyBuffer.key);
       setipfsHash(added.path);
-      const addedFile = await contract.methods.addFileWithOwner(_dataOwnerId, account, added.path, description).send({ from: account })
+      const addedFile = await contract.methods.addFileWithOwner(_dataOwnerId, account, encyIpfs.encrypted, encyIpfs.key, description).send({ from: account })
       console.log(addedFile)
       setAllUserBlocks();
       setAllSharedUserBlocks();
@@ -110,21 +113,10 @@ const EthProvider = ({ children }) => {
   }
 
   async function loadImage(url) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        const dataURL = canvas.toDataURL('image/png');
-        resolve(dataURL);
-      };
-      img.onerror = (error) => reject(error);
-      img.src = url;
-    });
+    return await fetch(url)
+      .then(response => response.text())
+      .catch(error => console.error(error));
+
   }
 
   async function getIpfsHashes() {
@@ -137,11 +129,11 @@ const EthProvider = ({ children }) => {
       for (let i = 1; i <= filesCount; i++) {
         let block = await contract.methods.dataOwners(`${_dataOwnerId}:${i}`).call({ from: account });
         const isShared = parseInt(block.isShared);
-        console.log(block);
-        if (!isShared) {
-          const imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
-          block.imgsrc = imgsrc;
-          userBlocks.push(block)
+        if (isShared !== 1) {
+          // const file = await getFileFromBlock(block);
+          // block.file = file;
+          block.description = JSON.parse(block.description);
+          userBlocks.push(block);
         }
       }
       setAllUserBlocks(userBlocks);
@@ -158,34 +150,60 @@ const EthProvider = ({ children }) => {
         let block = await contract.methods.dataOwners(`${_dataOwnerId}:${i}`).call({ from: account });
         const isShared = parseInt(block.isShared);
         console.log(block);
-        if (isShared) {
-          let imgsrc = `https://ipfs.io/ipfs/${block.ipfsHash}`;
-          try {
-            imgsrc = await loadImage(`https://ipfs.io/ipfs/${block.ipfsHash}`);
-          } catch (error) {
-            console.log(error);
-          }
-          block.imgsrc = imgsrc;
-          userBlocks.push(block)
+        if (isShared === 1) {
+          // const file = await getFileFromBlock(block);
+          // block.file = file;
+          block.description = JSON.parse(block.description);
+          userBlocks.push(block);
         }
       }
       setAllSharedUserBlocks(userBlocks);
     }
   }
 
+  async function getFileFromBlock(block) {
+    const decyIpfsHash = decryptText(block.ipfsHash, block.ipfsHashKey);
+    const encyFile = await loadImage(`https://ipfs.io/ipfs/${decyIpfsHash.ipfsHash}`);
+    const buffer = decryptFile(encyFile, decyIpfsHash.key);
+    const file = new File([buffer], block.blockHash, { type: block.description.type });
+    console.log(file);
+    return file;
+  }
+
+
   async function shareBlockData(userid, block) {
     await contract.methods.shareFile(block.blockHash, userid).send({ from: account });
-    toast.success('Successfully shared with ' + userid, {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
+    toast.success('Successfully shared with ' + userid)
 
+  }
+
+  async function makeFilePublic(block) {
+    await contract.methods.makeFilePublic(block.ipfsHashKey, block.blockHash).send({ from: account });
+  }
+
+  async function accessPublicFile(key) {
+    try {
+      key = key.trim();
+      if (!key) {
+        toast.error('Enter a valid key');
+      }
+      let block = await contract.methods.publicSharedFiles(`${key}`).call({ from: account });
+      if (block) {
+        let fileBlock = await contract.methods.dataOwners(`${block}`).call({ from: account });
+        fileBlock.description = JSON.parse(fileBlock.description || '{}');
+
+        const file = await getFileFromBlock(fileBlock);
+        const url = URL.createObjectURL(file);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileBlock.description.filename;
+        a.click();
+      } else {
+        toast.error('You dont have access.');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   async function login(email, password) {
@@ -278,7 +296,8 @@ const EthProvider = ({ children }) => {
       shareBlockData,
       currentBlock, setCurrentBlock,
       allSharedUserBlocks, setAllSharedUserBlocks,
-      getSharedBlocks,
+      getSharedBlocks, getFileFromBlock,
+      makeFilePublic, accessPublicFile,
       init
     }}>
       {children}

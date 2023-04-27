@@ -7,6 +7,7 @@ import Uploads from './Uploads/Uploads';
 import { ToastContainer } from 'react-toastify';
 import ShareModal from './Share/ShareModal/ShareModal';
 import SharedUploads from './Uploads/SharedUploads';
+import AccessUploads from './Uploads/AccessUploads';
 
 
 
@@ -40,6 +41,7 @@ const Home = () => {
             {(tab == tabs.LOGIN || tab == tabs.CREATE_ACCOUNT) && <Auth />}
             {(tab == tabs.LOGIN || tab == tabs.UPLOADED_FILES) && <Uploads />}
             {(tab == tabs.LOGIN || tab == tabs.SHARED_FILES) && <SharedUploads />}
+            {(tab == tabs.LOGIN || tab == tabs.ACCESS_FILE) && <AccessUploads />}
             <ShareModal selectedBlock={currentBlock} />
 
         </div>

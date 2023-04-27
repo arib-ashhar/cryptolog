@@ -50,7 +50,7 @@ function encryptFile(input) {
 
   return {
     'encrypted':encrypted,
-    'key_k1':key_k1
+    'key':key_k1
   };
 }
 
@@ -62,8 +62,8 @@ function encryptText(ipfsHash, key) {
   var cipherText = CryptoJS.AES.encrypt(Concatenated_string, key_k2).toString();
   console.log("CIPHER: ", cipherText);
   return {
-    'encrypted_Hash':cipherText,
-    'key_k2': key_k2
+    'encrypted':cipherText,
+    'key': key_k2
   };
 }
 
@@ -85,7 +85,7 @@ function decryptText(encrypted_Hash, key) {
   var key_k1 = decrypted[1];
   return {
     'ipfsHash':ipfsHash,
-    'key_k1':key_k1
+    'key':key_k1
   };
 }
 

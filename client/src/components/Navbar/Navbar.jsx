@@ -4,7 +4,7 @@ import { EthContext } from '../../contexts/EthContext';
 const Navbar = () => {
 
     const context = useContext(EthContext);
-    const { tabs, tab, setTab, getIpfsHashes, user } = context;
+    const { tabs, tab, setTab, user } = context;
 
     return (
         <nav className="navbar navbar-expand-lg navbar-light bg-light flex-nowrap p-0">
@@ -22,7 +22,6 @@ const Navbar = () => {
                         </li>
                         <li className="nav-item">
                             <a className={`nav-link ${tab === tabs.UPLOADED_FILES && 'active'}`} href="#" onClick={async () => {
-                                await getIpfsHashes()
                                 setTab(tabs.UPLOADED_FILES)
                             }}>All Files</a>
                         </li>
@@ -30,6 +29,11 @@ const Navbar = () => {
                             <a className={`nav-link ${tab === tabs.SHARED_FILES && 'active'}`} href="#" onClick={async () => {
                                 setTab(tabs.SHARED_FILES)
                             }}>Shared Files</a>
+                        </li>
+                        <li className="nav-item">
+                            <a className={`nav-link ${tab === tabs.ACCESS_FILE && 'active'}`} href="#" onClick={async () => {
+                                setTab(tabs.ACCESS_FILE)
+                            }}>Access File</a>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link" aria-current="page" href="#"
@@ -40,9 +44,9 @@ const Navbar = () => {
                             >Logout</a>
                         </li>
                     </ul>
-                    <div class="d-flex align-items-center">
+                    {user?.id && <div class="d-flex align-items-center">
                         Userid : {user?.id}
-                    </div>
+                    </div>}
                 </div>
             </div>
         </nav>
