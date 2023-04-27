@@ -27,7 +27,12 @@ const ImageUpload = () => {
 
     const onUploadimg = async () => {
         setIsLoading(true);
-        await onUpload(description.current.innerHTML);
+        await onUpload(JSON.stringify({
+            filename : img.file.name,
+            uploadTime : Date.now(),
+            type : img.file.type,
+            size : `${(img.file.size/ (1024 * 1024)).toFixed(2)} MB`
+        }));
         setIsLoading(false);
 
     }

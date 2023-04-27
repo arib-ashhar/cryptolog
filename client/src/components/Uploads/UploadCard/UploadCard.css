@@ -9,3 +9,16 @@
     object-fit: contain;
     background: #8080801f;
 }
+
+.public {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 12px;
+    padding: 1px 12px;
+    /* border: 1px solid green; */
+    border-radius: 35px;
+    background: #00b70094;
+    color: white;
+    margin: 5px;
+}
