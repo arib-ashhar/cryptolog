@@ -1,4 +1,5 @@
 import { EthProvider } from "./contexts/EthContext";
+<<<<<<< HEAD
 import Intro from "./components/Intro/";
 import Setup from "./components/Setup";
 import Demo from "./components/Demo";
@@ -9,9 +10,15 @@ import {create as IPFSHTTPClient} from 'ipfs-http-client';
 import { encryptFile, encryptText, decryptFile, decryptText } from './AES';
 import Web3 from 'web3';
 import cryptolog from './contracts/cryptolog.json'
+=======
+import React from 'react';
+import Home from "./components/Home";
+import 'react-toastify/dist/ReactToastify.css';
+>>>>>>> aea0b296cfc1427309666ccff3f1fbe639e11dc4
 
-//const ipfsClient = require('ipfs-http-client');
+function App() {
 
+<<<<<<< HEAD
 const PROJECT_ID = '2NO47KGXiYHIo3rT8UanDRaRZn7'
 const API_SECRET_KEY = 'c786f408153305f1fea5d1ad94dd496a'
 const auth = 'Basic ' + Buffer.from(PROJECT_ID + ":" + API_SECRET_KEY).toString('base64')
@@ -153,23 +160,23 @@ class App extends Component {
           <div className="container">
             <Intro />
             <hr />
+=======
+  return (
+    <EthProvider>
+      {/* <Router>
+        <Switch>
+          <div>
+            <Route exact path="/" component={Home} />
+            <Route exact path="/uploads" component={Uploads} />
+>>>>>>> aea0b296cfc1427309666ccff3f1fbe639e11dc4
           </div>
-          <div className="pure-u-1-1">
-            <p>Ethereum Account: {this.state.account}</p>
-            <h1>Your File</h1>
-            <p>This File is stored on IPFS & The Ethereum Blockchain!</p>
-            <img src={`https://ipfs.io/ipfs/${this.state.ipfsHash}`} />
-            <h2>Upload File</h2>
-            <form onSubmit={this.onSubmit}>
-              <input type='file' onChange={this.captureFile} />
-              <input type='submit' />
-            </form>
-            <hr />
-          </div>
-        </div>
-      </EthProvider>
-    );
-  }
+        </Switch>
+      </Router> */}
+
+      <Home />
+
+    </EthProvider>
+  );
 }
 
 

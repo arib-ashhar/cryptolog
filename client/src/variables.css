@@ -1,0 +1,15 @@
+:root {
+    --theme: #3a5cd1;
+    --theme-light: #3a5cd1a8;
+    --scrim-color: #00000036;
+    --white: white;
+    --color-p: #3a5cd1;
+    --color-white: #fff;
+    --color-light-gray: #eff2f5;
+    --color-mid-gray: #96a0b5;
+    --color-dark-gray: #6d7d93;
+    --color-dark: #182550;
+    --color-red: #d13a3a;
+    --easing: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+}

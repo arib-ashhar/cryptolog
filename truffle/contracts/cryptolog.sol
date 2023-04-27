@@ -2,43 +2,133 @@
 pragma solidity >=0.4.22 <0.9.0;
 
 contract cryptolog {
-
-  struct DataOwner {
-    uint dataOnwer_id;
-    string accountAddress;
-    uint filesCount;
-    string[] ipfsHashes;
-  }
-
-  mapping(string => DataOwner) public dataOwners;
-  uint public dataOwnerCount;
-
-  constructor() public {
-    //addOwner("1384D2C26c8830312A32B6b106cA585D512a5A5d");
-  }
-  //string ipfsHash;
-
-  function accessFile (string memory _dataOwner_acc_Address, string memory _ipfsHash) public view returns (string memory) {
-    uint256 addressBytes = bytes(_dataOwner_acc_Address).length;
-    require(addressBytes > 0);
-    uint256 ipfsBytes = bytes(_ipfsHash).length;
-    require(ipfsBytes > 0);
-    require(dataOwners[_dataOwner_acc_Address].filesCount != 0);
-    for(uint i=0;i<dataOwners[_dataOwner_acc_Address].filesCount;i++) {
-        if(keccak256(abi.encodePacked(dataOwners[_dataOwner_acc_Address].ipfsHashes[i])) == keccak256(abi.encodePacked(_ipfsHash))) {
-            return dataOwners[_dataOwner_acc_Address].ipfsHashes[i];
-        }
+    struct DataOwner {
+        // uint filesCount;
+        string blockHash;
+        string dataOwner_id;
+        string accountAddress;
+        string ipfsHash;
+        string description;
+        uint isShared;
+        uint timestamp;
     }
-    return "";
-  }
 
-  function addFile (string memory _dataOwner_acc_Address, string memory _ipfsReturn) public {
-    dataOwners[_dataOwner_acc_Address].filesCount++;
-    dataOwners[_dataOwner_acc_Address].ipfsHashes.push(_ipfsReturn);
-  }
+    mapping(string => DataOwner) public dataOwners;
+    // uint public filesCount;
+    mapping(string => uint) public dataOwnersFilesCount;
 
-  function addOwner (string memory _accountAddress) public {
-    dataOwnerCount++;
-    dataOwners[_accountAddress] = DataOwner(dataOwnerCount, _accountAddress, 0, new string[](0));
-  }
+    constructor() public {
+        //addOwner("1384D2C26c8830312A32B6b106cA585D512a5A5d");
+    }
+
+    // function addFile(
+    //     string memory _dataOwner_acc_Address,
+    //     string memory _ipfsReturn
+    // ) public {
+    //     DataOwner storage _dataOwner = dataOwners[_dataOwner_acc_Address];
+    //     _dataOwner.filesCount = _dataOwner.filesCount + 1;
+    //     _dataOwner.ipfsHashes = _ipfsReturn;
+    //     dataOwners[_dataOwner_acc_Address] = _dataOwner;
+    // }
+
+    function addFileWithOwner(
+        // string memory _blockAddress,
+        string memory _dataOwnerId,
+        string memory _accountAddress,
+        string memory _ipfsReturn,
+        string memory _description
+    ) public {
+        // filesCount++;
+        dataOwnersFilesCount[_dataOwnerId]++;
+        string memory _blockAddress = concatenate(
+            _dataOwnerId,
+            dataOwnersFilesCount[_dataOwnerId]
+        );
+
+        dataOwners[_blockAddress] = DataOwner(
+            // filesCount,
+            _blockAddress,
+            _dataOwnerId,
+            _accountAddress,
+            _ipfsReturn,
+            _description,
+            0,
+            block.timestamp
+        );
+    }
+
+    function shareFile(
+        string memory _fromblockAddress,
+        string memory _dataOwnerId
+    ) public {
+        dataOwnersFilesCount[_dataOwnerId]++;
+        string memory _toblockAddress = concatenate(
+            _dataOwnerId,
+            dataOwnersFilesCount[_dataOwnerId]
+        );
+
+        DataOwner storage _dataOwner = dataOwners[_fromblockAddress];
+        // _dataOwner.blockHash = _toblockAddress;
+        // _dataOwner.dataOwner_id = _dataOwnerId;
+        // _dataOwner.isShared = 1;
+        // _dataOwner.timestamp = block.timestamp;
+        dataOwners[_toblockAddress] = _dataOwner;
+        dataOwners[_toblockAddress] = DataOwner(
+            _toblockAddress,
+            _dataOwnerId,
+            _dataOwner.accountAddress,
+            _dataOwner.ipfsHash,
+           _dataOwner.description,
+            1,
+            block.timestamp
+        );
+    }
+
+    function uintToString(uint number) internal pure returns (string memory) {
+        if (number == 0) {
+            return "0";
+        }
+        uint temp = number;
+        uint digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (number != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint(number % 10)));
+            number /= 10;
+        }
+        return string(buffer);
+    }
+
+    function concatenate(
+        string memory text,
+        uint number
+    ) public pure returns (string memory) {
+        string memory numberAsString = uintToString(number);
+
+        bytes memory textBytes = bytes(text);
+        bytes memory colonBytes = bytes(":");
+        bytes memory numberBytes = bytes(numberAsString);
+
+        string memory result = new string(
+            textBytes.length + colonBytes.length + numberBytes.length
+        );
+        bytes memory resultBytes = bytes(result);
+
+        uint index = 0;
+        for (uint i = 0; i < textBytes.length; i++) {
+            resultBytes[index++] = textBytes[i];
+        }
+        for (uint i = 0; i < colonBytes.length; i++) {
+            resultBytes[index++] = colonBytes[i];
+        }
+        for (uint i = 0; i < numberBytes.length; i++) {
+            resultBytes[index++] = numberBytes[i];
+        }
+
+        return string(resultBytes);
+    }
 }
