@@ -84,6 +84,7 @@ const EthProvider = ({ children }) => {
       //     arguments: [] // pass constructor arguments here
       //   }).send({ from: accounts[0] })
       //   localStorage.setItem(CONTRACT_TOKEN, contract.options.address);
+      //   console.log("contract_token: ",CONTRACT_TOKEN);
       // }
       setcontract(contract)
     } else {
