@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import { Buffer } from 'buffer';
 import React, { Component } from 'react';
 import {create as IPFSHTTPClient} from 'ipfs-http-client';
-import {encryptAES, getbackIPFS} from './AES';
+import { encryptFile, encryptText, decryptFile, decryptText } from './AES';
 import Web3 from 'web3';
 import cryptolog from './contracts/cryptolog.json'
 
@@ -26,44 +26,44 @@ const client = IPFSHTTPClient({
 })
 
 class App extends Component {
-
+  //UNCOMMENT
   async componentWillMount() {
-    await this.loadWeb3()
-    await this.loadBlockchainData()
+    //await this.loadWeb3()
+    //await this.loadBlockchainData()
   }
 
-  async loadWeb3() {
-    if (window.ethereum) {
-      window.web3 = new Web3(window.ethereum)
-      await window.ethereum.enable()
-    }
-    else if (window.web3) {
-      window.web3 = new Web3(window.web3.currentProvider)
-    }
-    else {
-      window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-    }
-  }
+  // async loadWeb3() {
+  //   if (window.ethereum) {
+  //     window.web3 = new Web3(window.ethereum)
+  //     await window.ethereum.enable()
+  //   }
+  //   else if (window.web3) {
+  //     window.web3 = new Web3(window.web3.currentProvider)
+  //   }
+  //   else {
+  //     window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+  //   }
+  // }
 
-  async loadBlockchainData() {
-    const web3 = window.web3
-    // Load account
-    const accounts = await web3.eth.getAccounts()
-    this.setState({ account: accounts[0] }, () => {
-      console.log(this.state.account)
-    })
-    const networkId = await web3.eth.net.getId()
-    console.log(networkId)
-    const networkData = cryptolog.networks[networkId]
-    console.log(networkData)
-    if(networkData) {
-      const contract = new web3.eth.Contract(cryptolog.abi, networkData.address)
-      console.log(contract)
-      this.setState({ contract })
-    } else {
-      window.alert('Smart contract not deployed to detected network.')
-    }
-  }
+  // async loadBlockchainData() {
+  //   const web3 = window.web3
+  //   // Load account
+  //   const accounts = await web3.eth.getAccounts()
+  //   this.setState({ account: accounts[0] }, () => {
+  //     console.log(this.state.account)
+  //   })
+  //   const networkId = await web3.eth.net.getId()
+  //   console.log(networkId)
+  //   const networkData = cryptolog.networks[networkId]
+  //   console.log(networkData)
+  //   if(networkData) {
+  //     const contract = new web3.eth.Contract(cryptolog.abi, networkData.address)
+  //     console.log(contract)
+  //     this.setState({ contract })
+  //   } else {
+  //     window.alert('Smart contract not deployed to detected network.')
+  //   }
+  // }
 
   constructor(props) {
     super(props)
@@ -75,7 +75,8 @@ class App extends Component {
       account: null,
       account_id: null,
       contract: null,
-      encryptedWA: null
+      encryptedData: null,
+      k1: null,
     }
     this.captureFile = this.captureFile.bind(this);
     //this.onSubmit = this.onSubmit.bind(this);
@@ -92,7 +93,13 @@ class App extends Component {
       //console.log('before: ', Buffer(reader.result))
       this.setState({ buffer: Buffer(reader.result) }, () => {
         console.log('state: ', this.state.buffer)
-        // const EDATA = encryptAES(this.state.buffer);
+        const EDATA = encryptFile(this.state.buffer);
+        console.log("in app.js", EDATA);
+        //const DDATA = decryptFile(EDATA);
+        //console.log("in app.js -> ", DDATA);
+        this.setState({encryptedData: EDATA}, () => {
+          console.log("STATE: -> ", this.state.encryptedData);
+        });
         // this.setState({encryptedWA: EDATA}, () => {
         //   console.log("STATE WA: ", this.state.encryptedWA);
         // })
@@ -113,13 +120,24 @@ class App extends Component {
     try{
       const added = await client.add(this.state.buffer);
       console.log("IPFS: ", added.path)
+      console.log("LENGTH: ", added.path.length);
       this.setState({ipfsHash: added.path}, async () => {
         console.log("IPFS STATE: ", this.state.ipfsHash)
-        //await getbackIPFS(this.state.ipfsHash);
-        const id = await this.state.contract.methods.addOwner(this.state.account).send({from: this.state.account})
-        console.log(id)
-        const addedFile = await this.state.contract.methods.addFile(this.state.account, this.state.ipfsHash).send({from: this.state.account})
-        console.log(addedFile)
+        var response = encryptText(this.state.ipfsHash, this.state.encryptedData.key_k1);
+        console.log(response);
+        var response2 = decryptText(response.encrypted_Hash, response.key_k2);
+        console.log("in appjs: ", response2);
+        var response3 = decryptFile(this.state.encryptedData.encrypted, response2.key_k1)
+        console.log(response3);
+        //const id = await this.state.contract.methods.addOwner(this.state.account).send({from: this.state.account})
+        //console.log(id)
+        //const addedFile = await this.state.contract.methods.addFile(this.state.account, this.state.ipfsHash).send({from: this.state.account})
+        //console.log(addedFile)
+
+
+        // var APIurl = "https://ipfs.io/ipfs/"+this.state.ipfsHash
+        // let response = await fetch(APIurl)
+        // console.log(response)
       })
     } catch (error) {
       console.log(error)
