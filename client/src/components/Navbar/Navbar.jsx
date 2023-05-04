@@ -44,8 +44,8 @@ const Navbar = () => {
                             >Logout</a>
                         </li>
                     </ul>
-                    {user?.id && <div class="d-flex align-items-center">
-                        Userid : {user?.id}
+                    {user && <div class="d-flex align-items-center">
+                        {user.username} : {user.id}
                     </div>}
                 </div>
             </div>

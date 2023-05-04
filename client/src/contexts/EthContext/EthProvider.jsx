@@ -218,6 +218,8 @@ const EthProvider = ({ children }) => {
     });
 
     if (!response.ok) {
+      const newLocal = await response.json();
+      toast.error(newLocal?.errors[0]?.msg || 'Error');
       throw new Error('Login failed');
     }
 
@@ -225,6 +227,7 @@ const EthProvider = ({ children }) => {
 
     // Save the token to local storage
     localStorage.setItem(JWT_TOKEN, authtoken);
+    await getUser();
   }
 
   async function createUser(name, password, email) {

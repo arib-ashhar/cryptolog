@@ -36,12 +36,13 @@ const Home = () => {
             />
             {/* Same as */}
             <ToastContainer />
-            <Navbar />
-            {tab == tabs.UPLOAD_FILE && <ImageUpload />}
+            {(tab !== tabs.LOGIN && tab !== tabs.CREATE_ACCOUNT) && <Navbar />}
             {(tab == tabs.LOGIN || tab == tabs.CREATE_ACCOUNT) && <Auth />}
-            {(tab == tabs.LOGIN || tab == tabs.UPLOADED_FILES) && <Uploads />}
-            {(tab == tabs.LOGIN || tab == tabs.SHARED_FILES) && <SharedUploads />}
-            {(tab == tabs.LOGIN || tab == tabs.ACCESS_FILE) && <AccessUploads />}
+            {tab == tabs.UPLOAD_FILE && <ImageUpload />}
+            {( tab == tabs.UPLOADED_FILES) && <Uploads />}
+            {( tab == tabs.SHARED_FILES) && <SharedUploads />}
+            {(tab == tabs.ACCESS_FILE) && <AccessUploads />}
+            
             <ShareModal selectedBlock={currentBlock} />
 
         </div>
