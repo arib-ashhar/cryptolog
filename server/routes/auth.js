@@ -35,12 +35,12 @@ router.post('/createuser', [
       name: req.body.name,
       password: secPass,
       email: req.body.email,
-      hashid : req.body.hashid
+      hashid: req.body.hashid
     });
     const data = {
       user: {
         id: user.id,
-        hashid : user.hashid
+        username: user.name
       }
     }
     console.log(data);
@@ -48,7 +48,7 @@ router.post('/createuser', [
 
     success = true;
     // res.json(user)
-    res.json({ success, authtoken , id: user._id })
+    res.json({ success, authtoken, id: user._id })
 
   } catch (error) {
     success = false;
@@ -75,19 +75,19 @@ router.post('/login', [
     let user = await User.findOne({ email });
     if (!user) {
       success = false
-      return res.status(400).json({ error: "Please try to login with correct credentials" });
+      return res.status(400).json({ errors: [{ msg: "Please try to login with correct credentials" }]  });
     }
 
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
       success = false
-      return res.status(400).json({ success, error: "Please try to login with correct credentials" });
+      return res.status(400).json({ success, errors: [{ msg: "Please try to login with correct credentials" }] });
     }
 
     const data = {
       user: {
         id: user.id,
-        hashid : user.hashid
+        username: user.name
       }
     }
     const authtoken = jwt.sign(data, JWT_SECRET);
@@ -96,7 +96,7 @@ router.post('/login', [
 
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send({ errors: [{ msg: "Internal server error" }] });
   }
 
 
@@ -110,10 +110,10 @@ router.post('/getuser', fetchuser, async (req, res) => {
     res.send(req.user)
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Internal Server Error");
+    res.status(500).send({ errors: [{ msg: "Internal server error" }] });
   }
 })
- 
+
 
 
 module.exports = router
