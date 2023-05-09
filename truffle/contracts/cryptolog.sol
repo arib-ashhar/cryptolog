@@ -84,7 +84,7 @@ contract cryptolog {
     ) public {
         require(
             bytes(publicSharedFiles[_key].dataOwnerBlockHash).length == 0,
-            "Key already exists"
+            "This file already made public"
         );
         publicSharedFiles[_key] = PublicSharedFiles(_dataOwnerBlockHash);
         dataOwners[_dataOwnerBlockHash].isShared = 2;
