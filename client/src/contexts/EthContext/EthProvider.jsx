@@ -101,7 +101,7 @@ const EthProvider = ({ children }) => {
       console.log(_dataOwnerId, description);
       const encyBuffer = encryptFile(buffer);
       const added = await client.add(encyBuffer.encrypted);
-      console.log("IPFS: ", added.path)
+      console.log("IPFS: ", added)
       const encyIpfs = encryptText(added.path, encyBuffer.key);
       setipfsHash(added.path);
       const addedFile = await contract.methods.addFileWithOwner(_dataOwnerId, account, encyIpfs.encrypted, encyIpfs.key, description).send({ from: account })

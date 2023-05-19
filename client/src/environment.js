@@ -13,4 +13,4 @@ export const ipfsClient = {
     }
 }
 
-export const contract_token = '0xBdB41a184C07CcA8283d03CC4fA4F8c061255Ffa'
+export const contract_token = '0x7C367Fe181306338D9fFf454f076504DF8CD8B3B'
