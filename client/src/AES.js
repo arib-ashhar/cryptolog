@@ -43,7 +43,7 @@ const iv = createRandomKey(16);
 function encryptFile(input) {
   const key_k1 = createRandomKey(16);
   console.log("KEY: ",key_k1);
-  var wordArray = CryptoJS.lib.WordArray.create(input);           // Convert: ArrayBuffer -> WordArray
+  var wordArray = CryptoJS.lib.WordArray.create(input);                       // Convert: ArrayBuffer -> WordArray
   console.log("wordarray:  -> ",wordArray)
   var encrypted = CryptoJS.AES.encrypt(wordArray, key_k1).toString();        // Encryption: I: WordArray -> O: -> Base64 encoded string (OpenSSL-format)
   console.log("ENCRYPTED: ", encrypted);
